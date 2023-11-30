@@ -179,6 +179,40 @@ feature_set_VR2 = [local_set_VR2,HRV_VR2];
 feature_set_pre = [local_set_pre,HRV_pre];
 feature_set_post =[local_set_post,HRV_post];
 
+
+%% Loading and augmenting the labels
+
+%%%%%%%%
+% Note
+% need to add labels still: Code available here
+
+
+% 
+% load ('Label_MIOS_VR_COMBINED.mat'); % Label
+% load ('Label_MIOS_prepost.mat'); % mi_val
+% 
+% VR_labels = reshape(label,[],2);
+% 
+% labels = zeros (4,1);
+% labels (1) = VR_labels (par_num,1); % VR 1
+% labels (2) = VR_labels (par_num,2); % VR 2
+% labels (3) = mi_val(1, par_num); % Pre
+% labels (4) = mi_val(2, par_num); % Post
+% 
+% repeat = zeros (4,1);
+% repeat (1) = length (feature_set_VR1);
+% repeat (2) = length (feature_set_VR2);
+% repeat (3) = length (feature_set_pre);
+% repeat (4) = length (feature_set_post);
+% 
+% new_labels = repelem(labels,repeat);
+% 
+% %% Combine FS with label
+% python_FS = [python_FS2, new_labels];
+
+%%%%%%%%
+
+
 %% MAT file conversion 
 
 % Python_FS is organized for 1. VR1 2. VR2 3. Pre and 4. Post
@@ -197,6 +231,7 @@ python_FS (4,:) =  (feature_set_post);
 %     python_FS_1 (:,i) = normalization (python_FS (:,i))
 % end
 % python_FS = python_FS_1; 
+
 
 par = int2str(par_num);
 
