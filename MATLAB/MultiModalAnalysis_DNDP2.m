@@ -2,7 +2,7 @@
 % File to analyze VR Study
 
 clc;clear;
-par_num = 1;
+par_num = 2;
 
 %% Add path file to CSV or TXT files
 % Main file
@@ -10,27 +10,19 @@ path = ('/Users/binhnguyen/Desktop/Desktop/Digital Mental Health/2. Data and Ana
 
 % Participant files and Event markers
 switch par_num
-    case 1
-        filename1 = ('Session 1 - May 31/2021-05-31 Participant 1.csv');
+    case 2
+        filename1 = ('DNDP2_Test_VR_Biopac_20231126.csv');
         filename2 = ('Session 1 - May 31/event markers p1.csv');
         
-    case 2
-        filename1 = ('Session 1 - May 31/2021-05-31 Participant 2.csv');
-        filename2 = ('Session 1 - May 31/event markers p2.csv');
+        file = strcat ( filename1 );
         
-    case 3
-        filename1 = ('Session 1 - May 31/2021-05-31 Participant 3.csv');
-        filename2 = ('Session 1 - May 31/event markers p3.csv');
-    
+        % Temporary using old event markers 
+        event_marker_file = strcat ( path , filename2 );
+        
     otherwise
         fprintf ("False response");
         
 end
-
-file = strcat ( path , filename1 );
-
-event_marker_file = strcat ( path , filename2 );
-
 
 %% Open files - Raw Signals and Event Markers
 df = readtable (file);
@@ -39,21 +31,39 @@ df = readtable (file);
 df_event_markers = readtable (event_marker_file);
 df_EM = update_event_markers (df_event_markers);
 
-% Remove first row
-df(1,:) = [];
+%%%%%% Order of signals
+% RSP
+% PPG
+% Respiration Rate
+% Heart Rate
+% RR interval
+% Elevated Respiration Rate
+% ECG
+% EDA
+
+% Extract only important rows starting at row 23
+% df{1,1} gets the first row {1} gets the cell into a printable char arr
+
+for i = 23:100000
+
+    split_items = strsplit (df{i,1}{1});
+    hold = str2double (split_items(1:8));
+    df1 (i-22,:) = hold; 
+
+end
 
 %% Assign value
 % NOTE: Normalization might cause data leakage, should be done within the analysis
 
 % Commenting out the other since they're not needed
-ECG = normalization (df.CH13);
-% RI = normalization (df.CH1);
-% PPG = normalization (df.CH2);
-% GSR = normalization (df.CH14);
-% ECG_PR =  (df.CH40);
-% ECG_RR =  (df.CH41);
-% Respiration_Rate =  (df.CH42);
-% Respiration_Rate_elevated =  (df.CH43);
+ECG = normalization (df1 (:,7));
+RI = normalization (df1 (:,1));
+PPG = normalization (df1 (:,2));
+GSR = normalization (df1 (:,8));
+ECG_PR =  df1 (:,4);
+ECG_RR =  df1 (:,5);
+Respiration_Rate =  df1 (:,3);
+Respiration_Rate_elevated =  df1 (:,6);
 
 t = s2t(ECG);
 
@@ -62,7 +72,7 @@ fs = 2000;
 
 %% Visualize
 
-choice = 2;
+choice = 0;
 
 if choice == 0
 
@@ -169,7 +179,7 @@ feature_set_VR2 = [local_set_VR2,HRV_VR2];
 feature_set_pre = [local_set_pre,HRV_pre];
 feature_set_post =[local_set_post,HRV_post];
 
-% MAT file conversion 
+%% MAT file conversion 
 
 % Python_FS is organized for 1. VR1 2. VR2 3. Pre and 4. Post
 
@@ -181,14 +191,13 @@ python_FS (2,:) =  (feature_set_VR2);
 python_FS (3,:) =  (feature_set_pre);
 python_FS (4,:) =  (feature_set_post);
 
-%%%%%%%% Normalization 
+% % Normalization 
 % python_FS_1 = zeros (4, n);
-% 
 % for i = 1:n
 %     python_FS_1 (:,i) = normalization (python_FS (:,i))
 % end
 % python_FS = python_FS_1; 
 
 par = int2str(par_num);
-save(['python_FS_P', par,'.mat'],'python_FS');
 
+save(['python_FS_P', par,'.mat'],'python_FS');
